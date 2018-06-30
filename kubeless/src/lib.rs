@@ -125,7 +125,7 @@ fn handle_request(
             Box::new(
                 req.concat2()
                     .from_err()
-                    .map(move |bytes: bytes::Bytes| Some(bytes)),
+                    .map(Some),
             )
         } else {
             Box::new(futures::future::ok::<Option<bytes::Bytes>, actix_web::Error>(None))
@@ -151,21 +151,29 @@ fn handle_request(
                 memory_limit: *FUNC_MEMORY_LIMIT,
             };
 
-            let result = user_function(call_event, call_context);
-            // TODO figure out how to catch and unwind a panic
-
+            let result = std::panic::catch_unwind(move || user_function(call_event, call_context));
             timer.observe_duration();
 
-            HttpResponse::Ok().body(result)
+            match result {
+                Ok(result) => HttpResponse::Ok().body(result),
+                Err(reason) => {
+                    let body: &str = match reason.downcast_ref::<String>() {
+                        Some(err_string) => err_string.as_str(),
+                        None => "Unknown error",
+                    };
+
+                    HttpResponse::InternalServerError().body(body.to_string())
+                }
+            }
         })
         .responder()
 }
 
 /// Handle requests to /healthz
 fn healthz(req: HttpRequest) -> impl Responder {
-    match req.method() {
+    match *req.method() {
         // Accept GET and HEAD requests
-        &Method::GET | &Method::HEAD => HttpResponse::Ok().content_type("plain/text").body("OK"),
+        Method::GET | Method::HEAD => HttpResponse::Ok().content_type("plain/text").body("OK"),
         // Reject any other type of request with 400 Bad Request
         _ => HttpResponse::BadRequest().body("Bad Request"),
     }
@@ -179,6 +187,6 @@ pub fn start(func: UserFunction) {
             .resource("/", move |r| r.f(move |req| handle_request(req, func)))
             .resource("/healthz", |r| r.f(healthz))
     }).bind(format!("127.0.0.1:{}", &port))
-        .expect(&format!("Can not bind to port {}", &port))
+        .unwrap_or_else(|_| panic!("Can not bind to port {}", &port))
         .run();
 }

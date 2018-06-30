@@ -408,7 +408,7 @@ dependencies = [
 name = "hello-kubeless"
 version = "0.1.0"
 dependencies = [
- "kubeless 0.1.0",
+ "kubeless 0.1.2",
 ]
 
 [[package]]
@@ -492,7 +492,7 @@ dependencies = [
 
 [[package]]
 name = "kubeless"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "actix-web 0.6.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "bytes 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
