@@ -2,7 +2,7 @@
 [![Crates.io](https://img.shields.io/crates/v/kubeless.svg)](https://crates.io/crates/kubeless)
 [![Crates.io](https://docs.rs/kubeless/badge.svg)](https://docs.rs/kubeless)
 
-A Rust Library for Writing [Kubeless](https://kubeless.io) Functions.
+A Rust library for writing [Kubeless](https://kubeless.io) functions.
 
 ## Example ##
 ```rust
