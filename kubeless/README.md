@@ -1,7 +1,6 @@
 # kubeless-rs #
-
-[![Crates.io](https://img.shields.io/crates/v/kubeless.svg)][3]
-[![Docs.rs](https://docs.rs/kubeless/badge.svg)][4]
+![Crates.io](https://img.shields.io/crates/v/kubeless.svg)
+![Docs.rs](https://docs.rs/kubeless/badge.svg)
 
 A Rust Library for Writing [Kubeless](https://kubeless.io) Functions.
 

@@ -4,6 +4,10 @@ description = "A library for writing Kubeless functions"
 version = "0.1.0"
 authors = ["Stephan Wolski"]
 license = "MIT/Apache-2.0"
+repository = "https://github.com/Slowki/kubeless-rs"
+
+keywords = ["kubeless", "kubernetes", "serverless"]
+categories = ["network-programming"]
 
 [features]
 default = []
