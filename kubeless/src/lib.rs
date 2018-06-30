@@ -1,4 +1,4 @@
-//! `kubeless` is a library to enable developing [Kubeless](https://kubeless.io/) functions in Rust
+//! A Library for Writing [Kubeless](https://kubeless.io) Functions
 //!
 //! ```rust
 //! #[macro_use]

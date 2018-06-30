@@ -1,4 +1,4 @@
-# a Rust Library for [Kubeless](kubeless.io) #
+# a Rust Library for Writing [Kubeless](https://kubeless.io) Functions #
 
 ## Library ##
 See [kubeless](./kubeless)

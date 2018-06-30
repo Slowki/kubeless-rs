@@ -1,6 +1,6 @@
 [package]
 name = "kubeless"
-description = "A library to help write Kubeless functions in Rust"
+description = "A library for writing Kubeless functions"
 version = "0.1.0"
 authors = ["Stephan Wolski"]
 license = "MIT/Apache-2.0"
