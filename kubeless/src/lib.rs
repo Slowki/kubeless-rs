@@ -33,6 +33,8 @@ use actix_web::{server, App, AsyncResponder, HttpMessage, HttpRequest, HttpRespo
 
 use futures::{Future, Stream};
 
+use prometheus::Encoder;
+
 pub mod types;
 pub use types::*;
 
@@ -67,7 +69,14 @@ lazy_static! {
     // metric logging variables
     static ref CALL_HISTOGRAM : prometheus::Histogram = register_histogram!(histogram_opts!("function_duration_seconds", "Duration of user function in seconds")).unwrap();
     static ref CALL_TOTAL : prometheus::Counter = register_counter!(opts!("function_calls_total", "Number of calls to user function")).unwrap();
-    // static ref FAILURES_TOTAL : prometheus::Counter = register_counter!(opts!("function_failures_total", "Number of failed calls")).unwrap();
+    static ref FAILURES_TOTAL : prometheus::Counter = register_counter!(opts!("function_failures_total", "Number of failed calls")).unwrap();
+    static ref REGISTRY : prometheus::Registry = {
+        let reg = prometheus::Registry::new();
+        reg.register(Box::new(CALL_HISTOGRAM.clone())).unwrap();
+        reg.register(Box::new(CALL_TOTAL.clone())).unwrap();
+        reg.register(Box::new(FAILURES_TOTAL.clone())).unwrap();
+        reg
+    };
 }
 
 #[macro_export]
@@ -78,12 +87,7 @@ macro_rules! select_function {
             use kubeless::types::UserFunction;
             use kubeless::FUNC_HANDLER;
 
-            let mut selected_function : Option<UserFunction> = None;
-            $(
-                if stringify!($x) == *FUNC_HANDLER {
-                    selected_function = Some($x);
-                }
-            )*
+            let selected_function : Option<UserFunction> = [$((stringify!($x), $x as UserFunction), )*].iter().find(|x| x.0 == *FUNC_HANDLER).map(|x| x.1);
 
             match selected_function {
                 Some(result) => result,
@@ -157,6 +161,7 @@ fn handle_request(
             match result {
                 Ok(result) => HttpResponse::Ok().body(result),
                 Err(reason) => {
+                    FAILURES_TOTAL.inc();
                     let body: &str = match reason.downcast_ref::<String>() {
                         Some(err_string) => err_string.as_str(),
                         None => "Unknown error",
@@ -179,6 +184,21 @@ fn healthz(req: HttpRequest) -> impl Responder {
     }
 }
 
+/// Handle requests to /metrics
+fn metrics(req: HttpRequest) -> impl Responder {
+    match *req.method() {
+        // Accept GET and HEAD requests
+        Method::GET | Method::HEAD => {
+            let mut buffer = vec![];
+            prometheus::TextEncoder::new().encode(&REGISTRY.gather(), &mut buffer).unwrap();
+            HttpResponse::Ok().content_type("plain/text").body(String::from_utf8(buffer).unwrap())
+        },
+
+        // Reject any other type of request with 400 Bad Request
+        _ => HttpResponse::BadRequest().body("Bad Request"),
+    }
+}
+
 /// Start the HTTP server that Kubeless will use to interact with the container running this code
 pub fn start(func: UserFunction) {
     let port = std::env::var("FUNC_PORT").unwrap_or_else(|_| String::from("8080"));
@@ -186,6 +206,7 @@ pub fn start(func: UserFunction) {
         App::new()
             .resource("/", move |r| r.f(move |req| handle_request(req, func)))
             .resource("/healthz", |r| r.f(healthz))
+            .resource("/metrics", |r| r.f(metrics))            
     }).bind(format!("127.0.0.1:{}", &port))
         .unwrap_or_else(|_| panic!("Can not bind to port {}", &port))
         .run();
