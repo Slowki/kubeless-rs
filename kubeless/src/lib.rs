@@ -119,11 +119,19 @@ fn handle_request(
     let event_type = get_header(&req, "event-type");
     let event_time = get_header(&req, "event-time");
     let event_namespace = get_header(&req, "event-namespace");
-    let is_post = req.method() == &Method::POST;
 
-    req.concat2()
-        .from_err()
-        .map(move |bytes: bytes::Bytes| if is_post { Some(bytes) } else { None })
+    let body_future: Box<Future<Item = Option<bytes::Bytes>, Error = actix_web::Error>> =
+        if req.method() == &Method::POST {
+            Box::new(
+                req.concat2()
+                    .from_err()
+                    .map(move |bytes: bytes::Bytes| Some(bytes)),
+            )
+        } else {
+            Box::new(futures::future::ok::<Option<bytes::Bytes>, actix_web::Error>(None))
+        };
+
+    body_future
         .map(move |data: Option<bytes::Bytes>| {
             CALL_TOTAL.inc();
             let timer = CALL_HISTOGRAM.start_timer();
