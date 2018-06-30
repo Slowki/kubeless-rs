@@ -1,0 +1,23 @@
+[package]
+name = "kubeless"
+description = "A library to help write Kubeless functions in Rust"
+version = "0.1.0"
+authors = ["Stephan Wolski"]
+license = "MIT/Apache-2.0"
+
+[features]
+default = []
+nightly = ["prometheus/nightly", "lazy_static/nightly"]
+
+[dependencies.actix-web]
+version = "0.6.14"
+default-features = false
+
+[dependencies.prometheus]
+version = "0.4"
+default-features = false
+
+[dependencies]
+lazy_static = "1.0"
+bytes = "0.4"
+futures = "0.1"

@@ -1,0 +1,13 @@
+[workspace]
+members = [
+    "hello-kubeless",
+    "kubeless"
+]
+
+[profile.debug]
+codegen-units = 16
+
+[profile.release]
+lto = "thin"
+opt-level = 3
+codegen-units = 16

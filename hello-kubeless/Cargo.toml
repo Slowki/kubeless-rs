@@ -1,0 +1,7 @@
+[package]
+name = "hello-kubeless"
+version = "0.1.0"
+authors = ["Stephan Wolski"]
+
+[dependencies.kubeless]
+path = "../kubeless"
