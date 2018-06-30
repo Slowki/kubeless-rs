@@ -1,10 +1,11 @@
 [package]
 name = "kubeless"
 description = "A library for writing Kubeless functions"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Stephan Wolski"]
 license = "MIT/Apache-2.0"
 repository = "https://github.com/Slowki/kubeless-rs"
+readme = "README.md"
 
 keywords = ["kubeless", "kubernetes", "serverless"]
 categories = ["network-programming"]
